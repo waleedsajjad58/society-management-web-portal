@@ -1,75 +1,80 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Navbar } from '../components/Navbar';
-import { Input } from '../components/Input';
+import API from '../api'; 
 import { Button } from '../components/Button';
+import { Input } from '../components/Input';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Mock login logic - in real app would authenticate
-    if (email.includes('admin')) {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/member/dashboard');
+    try {
+      const { data } = await API.post('/auth/login', { email, password });
+      
+      /**
+       * SUCCESS: Save the entire data object as 'userInfo'
+       * This includes name, email, role, and token.
+       * This is what the ProtectedRoute component looks for.
+       */
+      localStorage.setItem('userInfo', JSON.stringify(data));
+
+      // Redirect based on the role returned from backend
+      if (data.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/member/dashboard');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="public" />
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to access your portal</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <form onSubmit={handleSubmit}>
-              <Input
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="Enter your email"
-                required
-              />
-              
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="Enter your password"
-                required
-              />
-              
-              <div className="mt-6">
-                <Button type="submit" variant="primary" size="lg">
-                  <span className="w-full text-center block">Sign In</span>
-                </Button>
-              </div>
-            </form>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+          Society Portal Sign in
+        </h2>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <Input 
+              label="Email Address" 
+              value={email} 
+              onChange={setEmail} 
+              type="email" 
+              required 
+            />
+            <Input 
+              label="Password" 
+              value={password} 
+              onChange={setPassword} 
+              type="password" 
+              required 
+            />
             
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-3">Demo Credentials:</p>
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="font-medium text-gray-700">Member Access</p>
-                  <p>member@society.com</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="font-medium text-gray-700">Admin Access</p>
-                  <p>admin@society.com</p>
-                </div>
-              </div>
+            <div className="pt-2">
+              <Button type="submit" variant="primary" className="w-full">
+                Sign In
+              </Button>
             </div>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              New to the society?{' '}
+              <button 
+                onClick={() => navigate('/signup')} 
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Create an account
+              </button>
+            </p>
           </div>
         </div>
       </div>

@@ -1,107 +1,85 @@
-import { useState } from 'react';
-import { Navbar } from '../../components/Navbar';
-import { Button } from '../../components/Button';
-import { Table } from '../../components/Table';
-import { Badge } from '../../components/Badge';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export function Complaints() {
-  const [showForm, setShowForm] = useState(false);
-  const [category, setCategory] = useState('');
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('Maintenance');
+  const [myComplaints, setMyComplaints] = useState([]);
 
-  const complaintsData = [
-    {
-      id: 1,
-      category: 'Maintenance',
-      description: 'Elevator not working on 3rd floor',
-      status: 'Pending',
-      date: '2026-02-01'
-    },
-    {
-      id: 2,
-      category: 'Cleanliness',
-      description: 'Garbage not collected for 2 days',
-      status: 'Resolved',
-      date: '2026-01-28'
-    },
-    {
-      id: 3,
-      category: 'Security',
-      description: 'Main gate lock broken',
-      status: 'Pending',
-      date: '2026-02-03'
-    }
-  ];
-
-  const columns = [
-    { header: 'Category', key: 'category' },
-    { header: 'Description', key: 'description' },
-    { 
-      header: 'Status', 
-      key: 'status',
-      render: (value: string) => <Badge status={value} />
-    },
-    { header: 'Date', key: 'date' }
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowForm(false);
-    setCategory('');
-    setDescription('');
+  // Get the token from localStorage for the API call
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const config = {
+    headers: { Authorization: `Bearer ${userInfo.token}` },
   };
 
+  const fetchComplaints = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:5000/api/complaints', config);
+      setMyComplaints(data);
+    } catch (err) {
+      console.error("Failed to fetch complaints");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/complaints', { title, description, category }, config);
+      alert("Complaint Submitted Successfully!");
+      setTitle('');
+      setDescription('');
+      fetchComplaints(); // Refresh the list
+    } catch (err) {
+      alert("Failed to submit complaint");
+    }
+  };
+
+  useEffect(() => { fetchComplaints(); }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="member" />
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Complaints</h1>
-            <p className="text-gray-600">Track and manage your complaints</p>
-          </div>
-          <Button onClick={() => setShowForm(!showForm)}>
-            {showForm ? 'Cancel' : 'Create Complaint'}
-          </Button>
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Lodge a Complaint</h1>
+      
+      {/* FORM SECTION */}
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div className="grid gap-4">
+          <input 
+            type="text" placeholder="Complaint Title" value={title}
+            onChange={(e) => setTitle(e.target.value)} required
+            className="p-2 border rounded"
+          />
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="p-2 border rounded">
+            <option>Maintenance</option>
+            <option>Plumbing</option>
+            <option>Electrical</option>
+            <option>Security</option>
+          </select>
+          <textarea 
+            placeholder="Describe your issue..." value={description}
+            onChange={(e) => setDescription(e.target.value)} required
+            className="p-2 border rounded h-32"
+          />
+          <button type="submit" className="bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+            Submit Complaint
+          </button>
         </div>
+      </form>
 
-        {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">New Complaint</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select 
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="">Select a category</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Cleanliness">Cleanliness</option>
-                  <option value="Security">Security</option>
-                  <option value="Noise">Noise</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  rows={4}
-                  placeholder="Describe your complaint in detail"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit">Submit Complaint</Button>
-            </form>
+      {/* LIST SECTION */}
+      <h2 className="text-xl font-semibold mb-4">My Previous Complaints</h2>
+      <div className="space-y-4">
+        {myComplaints.map((c: any) => (
+          <div key={c._id} className="bg-white p-4 rounded shadow border-l-4 border-indigo-500 flex justify-between">
+            <div>
+              <h3 className="font-bold">{c.title} <span className="text-sm font-normal text-gray-500">({c.category})</span></h3>
+              <p className="text-gray-600">{c.description}</p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-sm h-fit ${c.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+              {c.status}
+            </span>
           </div>
-        )}
-
-        <Table columns={columns} data={complaintsData} />
+        ))}
       </div>
     </div>
   );

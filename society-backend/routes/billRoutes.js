@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const { authorizeRoles } = require('../middleware/roleMiddleware');
 const { createBill, getBills, updateBill } = require('../controllers/billController');
+const { protect } = require('../middleware/authMiddleware');
+const { authorize } = require('../middleware/roleMiddleware');
 
-router.post('/', protect, authorizeRoles('admin'), createBill); // Admin creates
-router.get('/', protect, getBills); // Everyone can see bills (filter later if needed)
-router.put('/:id', protect, authorizeRoles('admin'), updateBill); // Admin updates
+// Admin can see all bills and create new ones
+router.get('/', protect, authorize('admin'), getBills);
+router.post('/', protect, authorize('admin'), createBill);
+
+// Admin can update a bill (e.g., mark as paid)
+router.put('/:id', protect, authorize('admin'), updateBill);
 
 module.exports = router;

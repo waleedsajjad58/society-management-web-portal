@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
+// ADD 'updateComplaintStatus' inside these brackets:
+const { createComplaint, getComplaints, updateComplaintStatus } = require('../controllers/complaintController');
 const { protect } = require('../middleware/authMiddleware');
-const { authorizeRoles } = require('../middleware/roleMiddleware');
-const { createComplaint, getComplaints, updateComplaint } = require('../controllers/complaintController');
 
-router.post('/', protect, createComplaint); // Resident creates complaint
-router.get('/', protect, authorizeRoles('admin'), getComplaints); // Admin views all
-router.put('/:id', protect, authorizeRoles('admin'), updateComplaint); // Admin updates
+router.route('/')
+  .post(protect, createComplaint)
+  .get(protect, getComplaints);
+
+// This is the line that was crashing:
+router.route('/:id').put(protect, updateComplaintStatus);
 
 module.exports = router;

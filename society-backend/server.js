@@ -1,32 +1,46 @@
 const express = require('express');
+const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const cors = require('cors'); // optional but needed for frontend
 
+// Import Route Files
+const authRoutes = require('./routes/authRoutes');
+const complaintRoutes = require('./routes/complaintRoutes');
+const billRoutes = require('./routes/billRoutes');
+
+// Load environment variables
 dotenv.config();
+
+// Connect to MongoDB
 connectDB();
 
-// 1️⃣ Initialize app AFTER imports
 const app = express();
 
-// 2️⃣ Middleware
-app.use(express.json());
-app.use(cors({
-  origin: 'http://localhost:3000', // frontend URL
-  credentials: true
-}));
+// --- MIDDLEWARE ---
+app.use(cors()); // Allows your frontend to communicate with this server
+app.use(express.json()); // Essential for reading JSON data from req.body
+app.use(express.urlencoded({ extended: true })); // Essential for form-data
 
+// --- ROUTES ---
+
+// Auth Routes (Login, Signup)
+app.use('/api/auth', authRoutes);
+
+// Complaint Routes (Create, View, Update Status)
+app.use('/api/complaints', complaintRoutes);
+
+// Billing/Challan Routes
+app.use('/api/bills', billRoutes);
+
+// Root Route for Testing
 app.get('/', (req, res) => {
-  res.send('Backend is running!');
+  res.send('Society Management API is running...');
 });
 
-
-// 3️⃣ Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/complaints', require('./routes/complaintRoutes'));
-app.use('/api/bookings', require('./routes/bookingRoutes'));
-app.use('/api/bills', require('./routes/billRoutes'));
-
-// 4️⃣ Start server
+// --- SERVER INITIALIZATION ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 MongoDB Connection attempted...`);
+});

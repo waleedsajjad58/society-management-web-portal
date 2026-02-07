@@ -3,7 +3,17 @@ import { Navbar } from '../../components/Navbar';
 import { Button } from '../../components/Button';
 import { Table } from '../../components/Table';
 import { Badge } from '../../components/Badge';
-
+const handleBookingSubmit = async (formData) => {
+  try {
+    // Sends the form data to POST /api/bookings
+    const response = await API.post('/bookings', formData); 
+    alert("Booking submitted successfully!");
+    // Refresh the list after success
+    setBookings([...bookings, response.data]); 
+  } catch (err) {
+    alert("Error creating booking: " + err.response.data.message);
+  }
+};
 export function Bookings() {
   const [showForm, setShowForm] = useState(false);
   const [facility, setFacility] = useState('');
