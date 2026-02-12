@@ -1,69 +1,60 @@
-import { Navbar } from '../components/Navbar';
-import { Link } from 'react-router';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="public" />
-      
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-indigo-600 to-indigo-800">
-        <div className="max-w-7xl mx-auto px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-white mb-6">
-              Society Management Portal
-            </h1>
-            <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-              A complete digital solution for managing complaints, facility bookings, and maintenance payments efficiently.
-            </p>
-            <Link 
-              to="/login"
-              className="inline-block bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-colors duration-200 shadow-lg"
-            >
-              Get Started
+    <main className="pt-24 min-h-screen bg-white">
+      {/* HERO SECTION */}
+      <section className="px-6 py-16 md:py-24 max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-indigo-50 text-indigo-600 font-bold text-xs uppercase tracking-widest">
+            Welcome to the Future of Living
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-6">
+            Managing your <br />
+            <span className="text-indigo-600">home</span> just got <br /> 
+            a whole lot smarter.
+          </h1>
+          <p className="text-lg text-gray-500 max-w-md mb-10 leading-relaxed">
+            All-in-one portal for bill payments, facility bookings, and instant support. 
+            Designed for the residents of tomorrow.
+          </p>
+          <div className="flex items-center gap-6">
+            <Link to="/signup" className="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-200 hover:-translate-y-1 transition-all">
+              Register Property
+            </Link>
+            <Link to="/about" className="font-bold text-gray-900 border-b-2 border-indigo-600 pb-1">
+              Learn More →
             </Link>
           </div>
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-          Key Features
-        </h2>
-        
-        <div className="grid grid-cols-3 gap-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow duration-200">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-              <div className="w-6 h-6 bg-indigo-600 rounded"></div>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">File Complaints</h3>
-            <p className="text-gray-600 leading-relaxed">
-              Submit and track complaints regarding society issues and maintenance. Get real-time updates on resolution status.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow duration-200">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <div className="w-6 h-6 bg-green-600 rounded"></div>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">Book Facilities</h3>
-            <p className="text-gray-600 leading-relaxed">
-              Request bookings for community halls, sports facilities, and other amenities. Simple approval process.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover:shadow-md transition-shadow duration-200">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <div className="w-6 h-6 bg-blue-600 rounded"></div>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">View Challans</h3>
-            <p className="text-gray-600 leading-relaxed">
-              Check your monthly maintenance dues and payment status. Complete transparency in billing.
-            </p>
-          </div>
+        <div className="relative">
+          <div className="absolute -inset-4 bg-indigo-100 rounded-3xl rotate-3"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?auto=format&fit=crop&w=800&q=80" 
+            alt="Modern Society" 
+            className="relative rounded-3xl shadow-2xl z-10 w-full object-cover h-[500px]"
+          />
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* QUICK STATS */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { label: 'Active Members', value: '1,200+' },
+            { label: 'Facilities', value: '15+' },
+            { label: 'Support Speed', value: '24/7' },
+            { label: 'Digital Bills', value: '100%' },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <p className="text-3xl font-black text-indigo-600">{stat.value}</p>
+              <p className="text-sm font-semibold text-gray-500 uppercase">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }

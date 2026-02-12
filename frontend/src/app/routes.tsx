@@ -13,17 +13,16 @@ import { ManageComplaints } from './pages/admin/ManageComplaints';
 import { ManageBookings } from './pages/admin/ManageBookings';
 import { ManageChallans } from './pages/admin/ManageChallans';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { DashboardLayout } from './components/DashboardLayout'; // <-- Import your new Layout
+import { DashboardLayout } from './components/DashboardLayout';
 
 export const router = createBrowserRouter([
-  // PUBLIC ROUTES
   { path: '/', element: <Home /> },
   { path: '/about', element: <About /> },
   { path: '/contact', element: <Contact /> },
   { path: '/login', element: <Login /> },
   { path: '/signup', element: <Signup /> },
 
-  // PROTECTED MEMBER ROUTES
+  // MEMBER SECTION
   {
     path: '/member',
     element: (
@@ -32,7 +31,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: '', element: <Navigate to="dashboard" replace /> }, // Redirect /member to /member/dashboard
+      { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <MemberDashboard /> },
       { path: 'complaints', element: <Complaints /> },
       { path: 'bookings', element: <Bookings /> },
@@ -40,7 +39,7 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // PROTECTED ADMIN ROUTES
+  // ADMIN SECTION
   {
     path: '/admin',
     element: (
@@ -49,7 +48,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: '', element: <Navigate to="dashboard" replace /> }, // Redirect /admin to /admin/dashboard
+      { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <AdminDashboard /> },
       { path: 'complaints', element: <ManageComplaints /> },
       { path: 'bookings', element: <ManageBookings /> },

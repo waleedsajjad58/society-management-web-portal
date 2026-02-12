@@ -1,72 +1,75 @@
-import { Navbar } from '../../components/Navbar';
-import { Table } from '../../components/Table';
-import { Badge } from '../../components/Badge';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Card } from '../../components/Card'; // Assuming path
+import { Badge } from '../../components/Badge'; // Using the Badge we fixed
 
 export function Challans() {
-  const challansData = [
-    {
-      id: 1,
-      month: 'February 2026',
-      amount: '₹5,000',
-      status: 'Unpaid',
-      dueDate: '2026-02-10'
-    },
-    {
-      id: 2,
-      month: 'January 2026',
-      amount: '₹5,000',
-      status: 'Paid',
-      dueDate: '2026-01-10'
-    },
-    {
-      id: 3,
-      month: 'December 2025',
-      amount: '₹5,000',
-      status: 'Paid',
-      dueDate: '2025-12-10'
-    },
-    {
-      id: 4,
-      month: 'November 2025',
-      amount: '₹5,000',
-      status: 'Paid',
-      dueDate: '2025-11-10'
-    }
-  ];
+  const [myBills, setMyBills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const columns = [
-    { header: 'Month', key: 'month' },
-    { header: 'Amount', key: 'amount' },
-    { header: 'Due Date', key: 'dueDate' },
-    { 
-      header: 'Status', 
-      key: 'status',
-      render: (value: string) => <Badge status={value} />
-    }
-  ];
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+
+  useEffect(() => {
+    const fetchMyBills = async () => {
+      try {
+        const { data } = await axios.get('http://localhost:5000/api/bills', config);
+        setMyBills(data);
+      } catch (err) { 
+        console.error("Error fetching member bills:", err); 
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyBills();
+  }, []);
+
+  // Calculate total unpaid amount for the header
+  const unpaidTotal = myBills
+    .filter((b: any) => b.status === 'unpaid')
+    .reduce((acc, curr: any) => acc + curr.amount, 0);
+
+  if (loading) return <div className="p-6 text-gray-500 text-center">Loading your challans...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="member" />
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Challans</h1>
-          <p className="text-gray-600">View your maintenance payment history</p>
+    <div className="space-y-6 p-4 md:p-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800">My Challans & Payments</h1>
+        <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-lg">
+          <p className="text-xs text-indigo-600 font-semibold uppercase tracking-wider">Outstanding Balance</p>
+          <p className="text-xl font-black text-indigo-900">Rs. {unpaidTotal}</p>
         </div>
-        
-        <div className="mb-6 bg-orange-50 border border-orange-200 rounded-xl p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <div className="w-5 h-5 bg-orange-500 rounded-full mt-0.5"></div>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-orange-800">Payment Reminder</p>
-              <p className="text-sm text-orange-700 mt-1">You have 1 pending challan worth ₹5,000. Please make the payment before the due date to avoid late fees.</p>
-            </div>
-          </div>
-        </div>
+      </div>
 
-        <Table columns={columns} data={challansData} />
+      <div className="grid gap-4">
+        {myBills.map((bill: any) => (
+          <Card key={bill._id}>
+            <div className="flex justify-between items-center p-2">
+              <div className="space-y-1">
+                <h2 className="font-bold text-gray-800 text-lg">{bill.month} Maintenance Bill</h2>
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span>ID: {bill._id.substring(0, 8).toUpperCase()}</span>
+                  <span>•</span>
+                  <span className="font-semibold text-gray-700">Rs. {bill.amount}</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-end gap-2">
+                {/* Use the Badge component we added the safety guard to! */}
+                <Badge status={bill.status} />
+                <span className="text-[10px] text-gray-400">
+                  Issued: {new Date(bill.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          </Card>
+        ))}
+
+        {myBills.length === 0 && (
+          <div className="text-center py-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+            <p className="text-gray-400">No maintenance bills have been issued to your account yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

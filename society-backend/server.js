@@ -7,6 +7,8 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const billRoutes = require('./routes/billRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const userRoutes = require('./routes/userRoutes'); // New: Added for resident lookups
 
 // Load environment variables
 dotenv.config();
@@ -17,20 +19,26 @@ connectDB();
 const app = express();
 
 // --- MIDDLEWARE ---
-app.use(cors()); // Allows your frontend to communicate with this server
-app.use(express.json()); // Essential for reading JSON data from req.body
-app.use(express.urlencoded({ extended: true })); // Essential for form-data
+app.use(cors()); 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 // --- ROUTES ---
 
 // Auth Routes (Login, Signup)
 app.use('/api/auth', authRoutes);
 
+// User Routes (Admin to get resident list)
+app.use('/api/users', userRoutes);
+
 // Complaint Routes (Create, View, Update Status)
 app.use('/api/complaints', complaintRoutes);
 
 // Billing/Challan Routes
 app.use('/api/bills', billRoutes);
+
+// Booking Routes
+app.use('/api/bookings', bookingRoutes);
 
 // Root Route for Testing
 app.get('/', (req, res) => {

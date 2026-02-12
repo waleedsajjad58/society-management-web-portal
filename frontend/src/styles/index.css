@@ -1,3 +1,41 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+@media print {
+  /* Hide UI elements we don't want on paper */
+  .no-print, 
+  nav, 
+  header, 
+  aside, 
+  button, 
+  .bg-indigo-900 {
+    display: none !important;
+  }
+
+  /* Reset layout for the page */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .flex-1 {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Make each bill look like a separate slip if needed */
+  .print-record {
+    border: 1px solid #eee !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid;
+  }
+}
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  padding-left: 100%; /* Ensures it starts from off-screen right */
+}

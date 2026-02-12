@@ -1,10 +1,11 @@
 interface BadgeProps {
-  status: string;
+  status?: string; // Made optional for safety
 }
 
 export function Badge({ status }: BadgeProps) {
   const getStatusStyles = () => {
-    const lowerStatus = status.toLowerCase();
+    // SAFETY GUARD: If status is missing, default to 'unknown'
+    const lowerStatus = (status || 'unknown').toLowerCase();
     
     if (lowerStatus === 'pending') {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -29,7 +30,7 @@ export function Badge({ status }: BadgeProps) {
 
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyles()}`}>
-      {status}
+      {status || 'Unknown'}
     </span>
   );
 }

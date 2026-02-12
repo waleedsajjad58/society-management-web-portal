@@ -1,40 +1,59 @@
 const Bill = require('../models/Bill');
 
-// Create bill (admin)
-exports.createBill = async (req, res) => {
-  try {
-    const bill = await Bill.create({
-      user: req.body.user,
-      amount: req.body.amount,
-      month: req.body.month,
-      status: req.body.status || 'unpaid',
-    });
-    res.status(201).json(bill);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-// Get all bills
+// 1. GET ALL BILLS
 exports.getBills = async (req, res) => {
   try {
-    const bills = await Bill.find().populate('user', 'name email');
-    res.json(bills);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    let query = {};
+    if (req.user.role === 'member') {
+      query = { user: req.user._id };
+    }
+    const bills = await Bill.find(query).populate('user', 'name email');
+    res.status(200).json(bills);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
-// Update bill status
+// 2. CREATE NEW BILL
+exports.createBill = async (req, res) => {
+  try {
+    const { user, amount, month } = req.body; 
+    const newBill = new Bill({ user, amount, month });
+    const savedBill = await newBill.save();
+    res.status(201).json(savedBill);
+  } catch (error) {
+    console.log("Backend Error:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 3. UPDATE BILL STATUS (This was likely the missing piece!)
 exports.updateBill = async (req, res) => {
   try {
-    const bill = await Bill.findById(req.params.id);
-    if (!bill) return res.status(404).json({ message: 'Bill not found' });
+    const updatedBill = await Bill.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true }
+    );
+    if (!updatedBill) {
+      return res.status(404).json({ message: "Bill not found" });
+    }
+    res.status(200).json(updatedBill);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-    bill.status = req.body.status || bill.status;
-    await bill.save();
-    res.json(bill);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+// 4. DELETE BILL
+exports.deleteBill = async (req, res) => {
+  try {
+    const bill = await Bill.findById(req.params.id);
+    if (!bill) {
+      return res.status(404).json({ message: "Bill not found" });
+    }
+    await bill.deleteOne();
+    res.status(200).json({ message: "Bill removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

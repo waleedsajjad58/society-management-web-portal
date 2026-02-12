@@ -1,121 +1,66 @@
-import { useState } from 'react';
-import { Navbar } from '../../components/Navbar';
-import { Button } from '../../components/Button';
-import { Table } from '../../components/Table';
-import { Badge } from '../../components/Badge';
-const handleBookingSubmit = async (formData) => {
-  try {
-    // Sends the form data to POST /api/bookings
-    const response = await API.post('/bookings', formData); 
-    alert("Booking submitted successfully!");
-    // Refresh the list after success
-    setBookings([...bookings, response.data]); 
-  } catch (err) {
-    alert("Error creating booking: " + err.response.data.message);
-  }
-};
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 export function Bookings() {
-  const [showForm, setShowForm] = useState(false);
-  const [facility, setFacility] = useState('');
+  const [facility, setFacility] = useState('Clubhouse');
   const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [timeSlot, setTimeSlot] = useState('Morning (9AM - 12PM)');
+  const [myBookings, setMyBookings] = useState([]);
 
-  const bookingsData = [
-    {
-      id: 1,
-      facility: 'Community Hall',
-      date: '2026-02-15',
-      time: '10:00 AM - 2:00 PM',
-      status: 'Approved'
-    },
-    {
-      id: 2,
-      facility: 'Sports Court',
-      date: '2026-02-20',
-      time: '6:00 PM - 8:00 PM',
-      status: 'Pending'
-    }
-  ];
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
 
-  const columns = [
-    { header: 'Facility', key: 'facility' },
-    { header: 'Date', key: 'date' },
-    { header: 'Time', key: 'time' },
-    { 
-      header: 'Status', 
-      key: 'status',
-      render: (value: string) => <Badge status={value} />
-    }
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowForm(false);
-    setFacility('');
-    setDate('');
-    setTime('');
+  const fetchBookings = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:5000/api/bookings', config);
+      setMyBookings(data);
+    } catch (err) { console.error("Fetch failed"); }
   };
 
+  const handleBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/bookings', { facility, date, timeSlot }, config);
+      alert("Booking Request Sent!");
+      fetchBookings();
+    } catch (err) { alert("Booking failed"); }
+  };
+
+  useEffect(() => { fetchBookings(); }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="member" />
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
-            <p className="text-gray-600">Manage your facility bookings</p>
-          </div>
-          <Button onClick={() => setShowForm(!showForm)}>
-            {showForm ? 'Cancel' : 'Request Booking'}
-          </Button>
-        </div>
+    <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Book a Facility</h1>
+      
+      <form onSubmit={handleBooking} className="bg-white p-6 rounded-lg shadow mb-8 grid gap-4">
+        <select value={facility} onChange={(e) => setFacility(e.target.value)} className="p-2 border rounded">
+          <option>Clubhouse</option>
+          <option>Gym</option>
+          <option>Swimming Pool</option>
+          <option>Tennis Court</option>
+        </select>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="p-2 border rounded" />
+        <select value={timeSlot} onChange={(e) => setTimeSlot(e.target.value)} className="p-2 border rounded">
+          <option>Morning (9AM - 12PM)</option>
+          <option>Afternoon (1PM - 4PM)</option>
+          <option>Evening (5PM - 8PM)</option>
+        </select>
+        <button type="submit" className="bg-green-600 text-white py-2 rounded hover:bg-green-700">Request Booking</button>
+      </form>
 
-        {showForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">New Booking Request</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Facility</label>
-                <select 
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  value={facility}
-                  onChange={(e) => setFacility(e.target.value)}
-                  required
-                >
-                  <option value="">Select a facility</option>
-                  <option value="Community Hall">Community Hall</option>
-                  <option value="Sports Court">Sports Court</option>
-                  <option value="Swimming Pool">Swimming Pool</option>
-                  <option value="Party Lawn">Party Lawn</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Time Slot</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="e.g., 10:00 AM - 2:00 PM"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit">Submit Request</Button>
-            </form>
+      <h2 className="text-xl font-semibold mb-4">My Bookings</h2>
+      <div className="space-y-2">
+        {myBookings.map((b: any) => (
+          <div key={b._id} className="bg-white p-4 rounded shadow flex justify-between items-center">
+            <div>
+              <span className="font-bold">{b.facility}</span> - {new Date(b.date).toLocaleDateString()}
+              <p className="text-sm text-gray-500">{b.timeSlot}</p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-sm ${b.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+              {b.status}
+            </span>
           </div>
-        )}
-
-        <Table columns={columns} data={bookingsData} />
+        ))}
       </div>
     </div>
   );

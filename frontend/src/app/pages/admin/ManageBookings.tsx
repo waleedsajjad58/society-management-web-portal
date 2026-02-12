@@ -1,80 +1,83 @@
-import { Navbar } from '../../components/Navbar';
-import { Table } from '../../components/Table';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export function ManageBookings() {
-  const bookingsData = [
-    {
-      id: 1,
-      member: 'John Doe (A-101)',
-      facility: 'Community Hall',
-      date: '2026-02-15',
-      time: '10:00 AM - 2:00 PM',
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      member: 'Jane Smith (B-205)',
-      facility: 'Sports Court',
-      date: '2026-02-20',
-      time: '6:00 PM - 8:00 PM',
-      status: 'Approved'
-    },
-    {
-      id: 3,
-      member: 'Robert Wilson (C-303)',
-      facility: 'Swimming Pool',
-      date: '2026-02-18',
-      time: '4:00 PM - 6:00 PM',
-      status: 'Pending'
-    },
-    {
-      id: 4,
-      member: 'Sarah Brown (A-405)',
-      facility: 'Party Lawn',
-      date: '2026-02-25',
-      time: '7:00 PM - 11:00 PM',
-      status: 'Rejected'
-    }
-  ];
+  const [bookings, setBookings] = useState([]);
 
-  const columns = [
-    { header: 'Member', key: 'member' },
-    { header: 'Facility', key: 'facility' },
-    { header: 'Date', key: 'date' },
-    { header: 'Time', key: 'time' },
-    { 
-      header: 'Status', 
-      key: 'status',
-      render: (value: string) => <Badge status={value} />
-    },
-    {
-      header: 'Action',
-      key: 'action',
-      render: (_: any, row: any) => (
-        <div className="flex gap-2">
-          {row.status === 'Pending' && (
-            <>
-              <Button variant="success" size="sm">Approve</Button>
-              <Button variant="danger" size="sm">Reject</Button>
-            </>
-          )}
-        </div>
-      )
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+
+  const fetchAllBookings = async () => {
+    try {
+      const { data } = await axios.get('http://localhost:5000/api/bookings', config);
+      setBookings(data);
+    } catch (err) {
+      console.error("Error fetching bookings", err);
     }
-  ];
+  };
+
+  const updateStatus = async (id: string, newStatus: string) => {
+    try {
+      await axios.put(`http://localhost:5000/api/bookings/${id}`, { status: newStatus }, config);
+      fetchAllBookings(); // Refresh the list
+    } catch (err) {
+      alert("Failed to update status");
+    }
+  };
+
+  useEffect(() => {
+    fetchAllBookings();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar variant="admin" />
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Bookings</h1>
-          <p className="text-gray-600">Review and approve facility booking requests</p>
-        </div>
-        
-        <Table columns={columns} data={bookingsData} />
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Manage Facility Bookings</h1>
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-gray-100 border-b">
+            <tr>
+              <th className="p-4">Resident</th>
+              <th className="p-4">Facility</th>
+              <th className="p-4">Date & Slot</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.length > 0 ? (
+              bookings.map((b: any) => (
+                <tr key={b._id} className="border-b hover:bg-gray-50">
+                  <td className="p-4">{b.user?.name || 'Resident'}</td>
+                  <td className="p-4 font-bold">{b.facility}</td>
+                  <td className="p-4">
+                    {new Date(b.date).toLocaleDateString()}
+                    <div className="text-xs text-gray-500">{b.timeSlot}</div>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      b.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <select 
+                      className="text-sm border rounded p-1"
+                      value={b.status}
+                      onChange={(e) => updateStatus(b._id, e.target.value)}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan={5} className="p-10 text-center text-gray-400">No booking requests found.</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

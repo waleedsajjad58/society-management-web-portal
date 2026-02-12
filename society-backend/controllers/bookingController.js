@@ -23,8 +23,8 @@ exports.getBookings = async (req, res) => {
   }
 };
 
-// Update booking status (admin)
-exports.updateBooking = async (req, res) => {
+// Change 'updateBooking' to 'updateBookingStatus'
+exports.updateBookingStatus = async (req, res) => { 
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
